@@ -1,63 +1,40 @@
 package eu.alfred.batterywarnerapp;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.HashMap;
+import java.util.Map;
 
 import eu.alfred.api.PersonalAssistant;
 import eu.alfred.api.PersonalAssistantConnection;
-import eu.alfred.api.sensors.SAFFacade;
+import eu.alfred.api.proxies.interfaces.ICadeCommand;
 import eu.alfred.api.speech.Cade;
-import eu.alfred.api.storage.CloudStorage;
-import eu.alfred.api.storage.responses.BucketResponse;
+import eu.alfred.batterywarnerapp.actions.BatteryStatusAction;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements ICadeCommand {
 
     private PersonalAssistant personalAssistant;
-    private CloudStorage cloudStorage;
-    private SAFFacade safFacade;
     private Cade cade;
+
+    private final String BATTERY_STATUS_ACTION = "BatteryStatusAction";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(eu.alfred.batterywarnerapp.R.layout.activity_main);
 
-        cloudStorage = null;
-        safFacade = null;
-        //personalAssistant = new PersonalAssistant(this);
-        cade = null;
-
-        personalAssistant = new PersonalAssistant(this);
-
-        /*cloudStorage = new CloudStorage(personalAssistant.getMessenger());
-        safFacade = new SAFFacade(personalAssistant.getMessenger());
-        cade = new Cade(personalAssistant.getMessenger());*/
-        sendNotification("Connected to AlfredService");
+        personalAssistant = new PersonalAssistant(getApplicationContext());
 
         personalAssistant.setOnPersonalAssistantConnectionListener(new PersonalAssistantConnection() {
             @Override
             public void OnConnected() {
-                // Do some stuff
                 cade = new Cade(personalAssistant.getMessenger());
+                onNewIntent(getIntent());
             }
 
             @Override
@@ -67,6 +44,17 @@ public class MainActivity extends ActionBarActivity {
         });
 
         personalAssistant.Init();
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        String command = intent.getStringExtra("command");
+        HashMap args = (HashMap) intent.getSerializableExtra("args");
+        if(command!=null) {
+            performAction(command, args);
+        }
     }
 
     @Override
@@ -91,202 +79,16 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void onBtnSaveClick(View view) {
-        EditText nameText = (EditText)this.findViewById(eu.alfred.batterywarnerapp.R.id.nameText);
-        saveText(nameText.getText().toString());
-    }
+    @Override
+    public void performAction(String command, Map<String, String> map) {
 
-    public void onBtnReadClick(View view){
-        readText();
-    }
-
-    private void saveText(String text) {
-
-        //cade.InitiateSpeechRecognition();
-
-        /*cade.GetCadeBackendUrl(new CadeResponse() {
-            @Override
-            public void OnSuccess(JSONObject jsonObject) {
-                //Not used
-            }
-
-            @Override
-            public void OnSuccess(JSONArray jsonArray) {
-                //Not used
-            }
-
-            @Override
-            public void OnSuccess(String s) {
-                String data = s;
-            }
-
-            @Override
-            public void OnError(Exception e) {
-
-            }
-        });*/
-
-       // AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-       // setText(String.valueOf(manager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)));
-
-        //setText("Started");
-        /*safFacade.GetLiveData("/shirt/tmp", new SensorDataResponse() {
-            @Override
-            public void OnError(Exception e) {
-                setText(e.toString());
-            }
-
-            @Override
-            public void OnSuccess(Byte[] jsonObject) {
-                if (jsonObject != null) {
-                    setText(Arrays.toString(jsonObject));
-                }
-            }
-        });
-*/
-
-        //safFacade.GetLiveData("/shirt/temp";
-
-        /*
-
-        JSONObject obj = new JSONObject();
-        try {
-            obj.put("name", text);
-            obj.put("key", "HelloAlfredName");
-        } catch (JSONException e) {
-            e.printStackTrace();
+        switch(command) {
+            case(BATTERY_STATUS_ACTION):
+                BatteryStatusAction bsa = new BatteryStatusAction(this, cade);
+                bsa.performAction(command,map);
+                break;
+            default:
+                break;
         }
-
-        JSONObject queryObject = new JSONObject();
-        try {
-            queryObject.put("key", "HelloAlfredName");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            cloudStorage.deleteJsonObject("HelloAlfredStructuredBucket", queryObject, new BucketResponse() {
-                @Override
-                public void OnError(Exception e) {
-                    setText(e.toString());
-                }
-
-                @Override
-                public void OnSuccess(JSONObject jsonObject) {
-
-                }
-
-                @Override
-                public void OnSuccess(JSONArray jsonArray) {
-
-                }
-            });
-        }
-        catch(Exception ex) {
-            ex.printStackTrace();
-        }
-
-
-        cloudStorage.saveJsonObject("HelloAlfredStructuredBucket", obj, new BucketResponse() {
-            @Override
-            public void OnError(Exception e) {
-                setText(e.toString());
-            }
-
-            @Override
-            public void OnSuccess(JSONObject jsonObject) {
-
-            }
-
-            @Override
-            public void OnSuccess(JSONArray jsonArray) {
-
-            }
-        });
-        */
-
     }
-
-    private void readText(){
-        JSONObject queryObject = new JSONObject();
-        try {
-            queryObject.put("key", "HelloAlfredName");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        cloudStorage.readJsonArray("HelloAlfredStructuredBucket", queryObject, new BucketResponse() {
-            @Override
-            public void OnError(Exception e) {
-                setText(e.toString());
-            }
-
-            @Override
-            public void OnSuccess(JSONObject jsonObject) {
-                if (jsonObject != null) {
-                    try {
-                        setText(jsonObject.getString("response"));
-                    } catch (JSONException e) {
-                        setText(e.toString());
-                    }
-                }
-            }
-
-            @Override
-            public void OnSuccess(JSONArray jsonArray) {
-                setText(jsonArray.toString());
-            }
-        });
-    }
-
-    private void setText(String text){
-
-        TextView nameText = (TextView) this.findViewById(eu.alfred.batterywarnerapp.R.id.resultLabel);
-        nameText.setText(text);
-    }
-
-    //region NotificationHelper
-    private void sendNotification(String notificationDetails) {
-        // Create an explicit content Intent that starts the main Activity.
-        Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
-
-        // Construct a task stack.
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-
-        // Add the main Activity to the task stack as the parent.
-        stackBuilder.addParentStack(MainActivity.class);
-
-        // Push the content Intent onto the stack.
-        stackBuilder.addNextIntent(notificationIntent);
-
-        // Get a PendingIntent containing the entire back stack.
-        PendingIntent notificationPendingIntent =
-                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        // Get a notification builder that's compatible with platform versions >= 4
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-
-        // Define the notification settings.
-        builder.setSmallIcon(eu.alfred.batterywarnerapp.R.drawable.ic_launcher)
-                // In a real app, you may want to use a library like Volley
-                // to decode the Bitmap.
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(),
-                        eu.alfred.batterywarnerapp.R.drawable.ic_launcher))
-                .setColor(Color.BLUE)
-                .setContentTitle(notificationDetails)
-                .setContentText("Notification")
-                .setContentIntent(notificationPendingIntent);
-
-        // Dismiss notification once the user touches it.
-        builder.setAutoCancel(true);
-
-        // Get an instance of the Notification manager
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        // Issue the notification
-        mNotificationManager.notify(0, builder.build());
-    }
-    //endregion
-
 }
