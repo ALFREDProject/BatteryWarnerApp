@@ -5,7 +5,7 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        applicationId "eu.alfred.navigationapp"
+        applicationId "eu.alfred.batterywarnerapp"
         minSdkVersion 18
         targetSdkVersion 21
         versionCode 1
