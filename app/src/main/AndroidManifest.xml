@@ -5,11 +5,15 @@
     <application
         android:allowBackup="true"
         android:launchMode="singleTask"
+
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
+
         android:theme="@style/AppTheme" >
         <activity
             android:name=".MainActivity"
+            android:screenOrientation="sensorPortrait"
+            android:configChanges="screenSize|orientation"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

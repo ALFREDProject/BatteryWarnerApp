@@ -2,52 +2,34 @@ package eu.alfred.batterywarnerapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.util.Log;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import eu.alfred.api.PersonalAssistant;
-import eu.alfred.api.PersonalAssistantConnection;
 import eu.alfred.api.proxies.interfaces.ICadeCommand;
-import eu.alfred.api.speech.Cade;
 import eu.alfred.batterywarnerapp.actions.BatteryStatusAction;
+import eu.alfred.ui.AppActivity;
+import eu.alfred.ui.CircleButton;
 
-
-public class MainActivity extends ActionBarActivity implements ICadeCommand {
-
-    private PersonalAssistant personalAssistant;
-    private Cade cade;
+public class MainActivity extends AppActivity implements ICadeCommand {
 
     private final String BATTERY_STATUS_ACTION = "BatteryStatusAction";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //Change your view contents. Note, the the button has to be included last.
         setContentView(eu.alfred.batterywarnerapp.R.layout.activity_main);
 
-        personalAssistant = new PersonalAssistant(getApplicationContext());
-
-        personalAssistant.setOnPersonalAssistantConnectionListener(new PersonalAssistantConnection() {
-            @Override
-            public void OnConnected() {
-                cade = new Cade(personalAssistant.getMessenger());
-                onNewIntent(getIntent());
-            }
-
-            @Override
-            public void OnDisconnected() {
-                // Do some cleanup stuff
-            }
-        });
-
-        personalAssistant.Init();
+        circleButton = (CircleButton) findViewById(R.id.voiceControlBtn);
+        circleButton.setOnTouchListener(new CircleTouchListener());
     }
 
     @Override
     public void onNewIntent(Intent intent) {
+        Log.i("onNewIntent", getPackageName());
         super.onNewIntent(intent);
         setIntent(intent);
         String command = intent.getStringExtra("command");
@@ -58,37 +40,31 @@ public class MainActivity extends ActionBarActivity implements ICadeCommand {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(eu.alfred.batterywarnerapp.R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == eu.alfred.batterywarnerapp.R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void performAction(String command, Map<String, String> map) {
 
-        switch(command) {
-            case(BATTERY_STATUS_ACTION):
+        //Add custom events here
+        switch (command) {
+            case (BATTERY_STATUS_ACTION):
                 BatteryStatusAction bsa = new BatteryStatusAction(this, cade);
-                bsa.performAction(command,map);
+                bsa.performAction(command, map);
                 break;
             default:
                 break;
+
         }
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
     }
 }
