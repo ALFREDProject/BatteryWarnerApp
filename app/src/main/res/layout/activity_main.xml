@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:ignore="MergeRootFrame"
+    android:visibility="gone"
     tools:context=".MainActivity">
 
     <TextView
@@ -14,6 +15,7 @@
         android:layout_height="match_parent"
         android:text="test"/>
 
-    <include layout="@layout/voice_btn_layout"/>
+    <include layout="@layout/voice_btn_layout"
+        android:visibility="visible"/>
 
 </RelativeLayout>
