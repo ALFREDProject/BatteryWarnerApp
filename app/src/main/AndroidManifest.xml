@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="eu.alfred.batterywarnerapp" 
-    android:versionCode="5"
-    android:versionName="5.0" >
+    android:versionCode="7"
+    android:versionName="7.0" >
 
     <application
         android:allowBackup="true"
         android:launchMode="singleTask"
 
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
 
         android:theme="@android:style/Theme.Translucent.NoTitleBar">

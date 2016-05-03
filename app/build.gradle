@@ -8,8 +8,8 @@ android {
         applicationId "eu.alfred.batterywarnerapp"
         minSdkVersion 18
         targetSdkVersion 21
-        versionCode 5
-        versionName "5.0"
+        versionCode 7
+        versionName "7.0"
     }
     buildTypes {
         release {
